@@ -1,0 +1,19 @@
+title: Claude Code Web App Guide
+description: |
+  A comprehensive guide for building web applications with Google Cloud, Gemini AI, Next.js, and Firebase.
+  
+  Created by <a href="https://www.linkedin.com/in/martinsmit">Martin Smit</a>
+theme: jekyll-theme-minimal
+baseurl: ""
+url: "https://grick.me"
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Exclude files
+exclude:
+  - README.md
+  - LICENSE
