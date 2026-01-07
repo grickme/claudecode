@@ -9,6 +9,14 @@ Guidelines for Claude Code to prevent credential leaks, secure applications, and
 
 ---
 
+## Guides
+
+| Guide | Description |
+|-------|-------------|
+| [API Protection Pattern](./api-protection.md) | CORS, middleware, Firebase token verification |
+
+---
+
 ## Protecting Secrets and API Keys
 
 ### Never Hardcode Credentials
@@ -99,32 +107,56 @@ If any matches found, **DO NOT COMMIT**. Remove the secrets first.
 
 ## Securing API Routes
 
+> **See also:** [API Protection Pattern](./api-protection.md) for complete CORS + middleware + token verification.
+
 ### Always Validate Authentication
+
+Use the `verifyAuth` middleware for consistent token verification:
+
+```typescript
+// lib/auth-middleware.ts
+import { NextRequest } from 'next/server';
+import { adminAuth } from './firebase-admin';
+
+export interface AuthResult {
+  authenticated: boolean;
+  userId?: string;
+  email?: string;
+  error?: string;
+}
+
+export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
+  const authHeader = request.headers.get('Authorization');
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { authenticated: false, error: 'Missing Authorization header' };
+  }
+
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = await adminAuth.verifyIdToken(token);
+    return { authenticated: true, userId: decoded.uid, email: decoded.email };
+  } catch {
+    return { authenticated: false, error: 'Invalid or expired token' };
+  }
+}
+```
+
+Usage in API routes:
 
 ```typescript
 // app/api/protected/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import admin from 'firebase-admin';
+import { verifyAuth } from '@/lib/auth-middleware';
 
 export async function GET(request: NextRequest) {
-  // Get token from header
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await verifyAuth(request);
+  if (!auth.authenticated) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
   }
 
-  const token = authHeader.split('Bearer ')[1];
-
-  try {
-    // Verify token
-    const decoded = await admin.auth().verifyIdToken(token);
-    const userId = decoded.uid;
-
-    // Proceed with authenticated request
-    return NextResponse.json({ userId, data: '...' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  // auth.userId is available
+  return NextResponse.json({ userId: auth.userId, data: '...' });
 }
 ```
 

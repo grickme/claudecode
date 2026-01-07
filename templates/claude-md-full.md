@@ -23,6 +23,7 @@ Specific guides:
 - Embeddings: https://grick.me/ai/embeddings
 - Auth: https://grick.me/auth/firebase-auth
 - API Routes: https://grick.me/backend/nextjs-api
+- API Protection: https://grick.me/security/api-protection
 - Email: https://grick.me/email/resend
 - Security: https://grick.me/security/
 - Troubleshooting: https://grick.me/troubleshooting

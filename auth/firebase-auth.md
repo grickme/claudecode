@@ -238,26 +238,33 @@ export default function RootLayout({ children }) {
 
 ## Server-side Token Verification
 
+> **See also:** [API Protection Pattern](../security/api-protection.md) for complete CORS + middleware guide.
+
 ```typescript
 // lib/auth-middleware.ts
 import { NextRequest } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
-import { DecodedIdToken } from 'firebase-admin/auth';
 
-export async function verifyAuth(request: NextRequest): Promise<DecodedIdToken | null> {
-  const authHeader = request.headers.get('authorization');
+export interface AuthResult {
+  authenticated: boolean;
+  userId?: string;
+  email?: string;
+  error?: string;
+}
+
+export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
+  const authHeader = request.headers.get('Authorization');
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return null;
+    return { authenticated: false, error: 'Missing Authorization header' };
   }
 
-  const token = authHeader.split('Bearer ')[1];
-
   try {
+    const token = authHeader.replace('Bearer ', '');
     const decoded = await adminAuth.verifyIdToken(token);
-    return decoded;
+    return { authenticated: true, userId: decoded.uid, email: decoded.email };
   } catch {
-    return null;
+    return { authenticated: false, error: 'Invalid or expired token' };
   }
 }
 ```
@@ -270,16 +277,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/auth-middleware';
 
 export async function GET(request: NextRequest) {
-  const user = await verifyAuth(request);
+  const auth = await verifyAuth(request);
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: auth.error || 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   return NextResponse.json({
     message: 'Protected data',
-    userId: user.uid,
-    email: user.email,
+    userId: auth.userId,
+    email: auth.email,
   });
 }
 ```

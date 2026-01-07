@@ -17,6 +17,7 @@ Specific guides when needed:
 - Gemini AI: https://grick.me/ai/gemini
 - Auth: https://grick.me/auth/firebase-auth
 - API Routes: https://grick.me/backend/nextjs-api
+- API Protection: https://grick.me/security/api-protection
 - Security: https://grick.me/security/
 - Troubleshooting: https://grick.me/troubleshooting
 

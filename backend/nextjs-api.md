@@ -137,38 +137,45 @@ export async function POST(request: NextRequest) {
 
 ## Authentication Middleware
 
+> **See also:** [API Protection Pattern](../security/api-protection.md) for complete CORS + middleware guide.
+
 ```typescript
 // lib/auth-middleware.ts
-import { NextRequest, NextResponse } from 'next/server';
-import admin from 'firebase-admin';
+import { NextRequest } from 'next/server';
+import { adminAuth } from './firebase-admin';
 
-export async function verifyAuth(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
+export interface AuthResult {
+  authenticated: boolean;
+  userId?: string;
+  email?: string;
+  error?: string;
+}
+
+export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
+  const authHeader = request.headers.get('Authorization');
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return null;
+    return { authenticated: false, error: 'Missing Authorization header' };
   }
 
-  const token = authHeader.split('Bearer ')[1];
-
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    return decoded;
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = await adminAuth.verifyIdToken(token);
+    return { authenticated: true, userId: decoded.uid, email: decoded.email };
   } catch {
-    return null;
+    return { authenticated: false, error: 'Invalid or expired token' };
   }
 }
 
 // Usage in API route
 export async function GET(request: NextRequest) {
-  const user = await verifyAuth(request);
+  const auth = await verifyAuth(request);
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!auth.authenticated) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
   }
 
-  // User is authenticated
-  const userId = user.uid;
+  // auth.userId and auth.email are available
   // ...
 }
 ```
@@ -327,6 +334,10 @@ export async function GET(request: NextRequest) {
 
 ## CORS Headers
 
+> **Recommended:** Use middleware for CORS. See [API Protection Pattern](../security/api-protection.md).
+
+For simple per-route CORS (not recommended for production):
+
 ```typescript
 // For specific routes
 export async function GET(request: NextRequest) {
@@ -350,6 +361,8 @@ export async function OPTIONS(request: NextRequest) {
   });
 }
 ```
+
+**Warning:** Using `*` for origin allows all domains. For production, use specific allowed origins in middleware.
 
 ## Rate Limiting
 

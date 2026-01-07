@@ -110,10 +110,12 @@ Follow these guides when building this project:
 - **Cloud Storage**: Fetch https://grick.me/infrastructure/gcs
 - **Authentication**: Fetch https://grick.me/auth/firebase-auth
 - **API Routes**: Fetch https://grick.me/backend/nextjs-api
+- **API Protection**: Fetch https://grick.me/security/api-protection
 - **Email**: Fetch https://grick.me/email/
 
 ### Security (IMPORTANT)
 ALWAYS follow: https://grick.me/security/
+For API routes: https://grick.me/security/api-protection
 
 Before EVERY git commit:
 - Check for leaked secrets (API keys, passwords, tokens)

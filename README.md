@@ -131,7 +131,7 @@ Or copy a template:
 |---------|--------|
 | [Getting Started](getting-started.md) | New project setup with Claude |
 | [Infrastructure](infrastructure/) | GitHub, GCP, Cloud Run, Firestore, GCS, Secrets |
-| [Security](security/) | Protecting secrets, API security, preventing scraping |
+| [Security](security/) | Protecting secrets, [API protection](security/api-protection), CORS, preventing scraping |
 | [AI](ai/) | Gemini, Vertex AI, Embeddings |
 | [Backend](backend/) | Local dev, Next.js API, PDF Processing/Creation, FastAPI |
 | [Frontend](frontend/) | Next.js, Tailwind, shadcn/ui |
